@@ -1,0 +1,44 @@
+# Set to true for troubleshooting — debug mode may log sensitive data
+debug = false
+
+[ldap]
+  enabled = true
+  listen  = "0.0.0.0:3893"
+
+[ldaps]
+  enabled = false
+
+[backend]
+  datastore     = "plugin"
+  plugin        = "/app/pocketid.so"
+  pluginhandler = "NewPocketIDHandler"
+  baseDN        = "dc=example,dc=com"
+  nameformat    = "cn"
+  groupformat   = "ou"
+  sshkeyattr    = "sshPublicKey"
+  anonymousdse  = true
+
+[behaviors]
+  # IgnoreCapabilities = false is the safe default: only users with explicit
+  # search capabilities (like the service account below) can perform searches.
+  # Set to true only if you understand the implications.
+  IgnoreCapabilities = false
+
+# Service account for sssd to bind with
+[[users]]
+  name         = "serviceuser"
+  uidnumber    = 9000
+  primarygroup = 9000
+  # CHANGE THIS: echo -n 'your-password' | sha256sum | awk '{print $1}'
+  passsha256   = "REPLACE_WITH_SHA256_HASH"
+
+[[users.capabilities]]
+  action = "search"
+  object = "*"
+
+[[groups]]
+  name      = "svcaccts"
+  gidnumber = 9000
+
+[api]
+  enabled = false

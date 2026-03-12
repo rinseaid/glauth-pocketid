@@ -1,0 +1,46 @@
+# Build artifacts
+bin/
+*.so
+*.exe
+
+# Go
+vendor/
+.glauth-source/
+
+# IDE / editor
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Claude
+CLAUDE.md
+.claude/
+
+# macOS
+.DS_Store
+
+# Environment files (may contain secrets)
+.env*
+
+# UID/GID persistence (runtime data, not config)
+uidmap.json
+
+# Docker volumes / runtime
+docker/**/data/
+
+# Pocket ID integration (contains secrets, kept locally)
+docker/docker-compose.pocketid.yml
+docker/seed-pocketid.sh
+docs/
+
+# User config (copied from examples)
+docker-compose.yml
+glauth.cfg
+sssd.conf
+
+# Test artifacts
+*.test
+coverage.out
+glauth-pocketid

@@ -1,0 +1,40 @@
+# /etc/sssd/sssd.conf — must be owned by root with mode 0600
+# Install: sudo cp sssd.conf.example /etc/sssd/sssd.conf && sudo chmod 0600 /etc/sssd/sssd.conf
+
+[sssd]
+services = nss, pam, sudo, ssh
+domains = example.com
+
+[domain/example.com]
+id_provider     = ldap
+auth_provider   = none
+sudo_provider   = ldap
+
+ldap_uri        = ldap://glauth.internal:3893
+ldap_search_base = dc=example,dc=com
+ldap_default_bind_dn = cn=serviceuser,ou=svcaccts,dc=example,dc=com
+ldap_default_authtok = <service-account-password>
+
+enumerate = true
+
+ldap_user_object_class   = posixAccount
+ldap_group_object_class  = posixGroup
+ldap_user_name           = cn
+ldap_user_uid_number     = uidNumber
+ldap_user_gid_number     = gidNumber
+ldap_user_home_directory = homeDirectory
+ldap_user_shell          = loginShell
+ldap_user_ssh_public_key = sshPublicKey
+
+ldap_group_name   = ou
+ldap_group_member = memberUid
+
+ldap_sudo_search_base = ou=sudoers,dc=example,dc=com
+
+ldap_schema = rfc2307
+
+entry_cache_timeout = 60
+refresh_expired_interval = 30
+
+[sudo]
+sudo_timed = false

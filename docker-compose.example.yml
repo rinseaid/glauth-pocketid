@@ -1,0 +1,24 @@
+services:
+  glauth:
+    image: ghcr.io/rinseaid/glauth-pocketid:latest
+    ports:
+      - "3893:3893"
+      - "8080:8080"
+    environment:
+      POCKETID_BASE_URL: "https://id.example.com"
+      POCKETID_API_KEY: "your-pocket-id-api-key"
+      POCKETID_REFRESH_SEC: "300"
+      POCKETID_PERSIST_PATH: "/var/lib/glauth/uidmap.json"
+      POCKETID_WEBHOOK_PORT: "8080"
+      # POCKETID_WEBHOOK_SECRET: "optional-shared-secret"
+      # POCKETID_UID_BASE: "10000"
+      # POCKETID_GID_BASE: "10000"
+      # POCKETID_DEFAULT_SHELL: "/bin/bash"
+      # POCKETID_DEFAULT_HOME: "/home/{username}"
+    volumes:
+      - glauth-data:/var/lib/glauth
+      - ./glauth.cfg.example:/etc/glauth/glauth.cfg:ro
+    restart: unless-stopped
+
+volumes:
+  glauth-data:

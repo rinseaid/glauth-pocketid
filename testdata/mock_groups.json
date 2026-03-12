@@ -1,0 +1,35 @@
+{
+  "data": [
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440001",
+      "friendlyName": "developers",
+      "customClaims": [],
+      "userCount": 2
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440002",
+      "friendlyName": "sudo-ALL",
+      "customClaims": [
+        {"key": "sudoCommands", "value": "ALL"},
+        {"key": "sudoHosts", "value": "ALL"},
+        {"key": "sudoRunAsUser", "value": "ALL"}
+      ],
+      "userCount": 2
+    },
+    {
+      "id": "660e8400-e29b-41d4-a716-446655440003",
+      "friendlyName": "sudo-restart-services",
+      "customClaims": [
+        {"key": "sudoCommands", "value": "/usr/bin/systemctl restart *"},
+        {"key": "sudoHosts", "value": "ALL"},
+        {"key": "sudoRunAsUser", "value": "root"}
+      ],
+      "userCount": 1
+    }
+  ],
+  "pagination": {
+    "totalPages": 1,
+    "totalItems": 3,
+    "currentPage": 1
+  }
+}

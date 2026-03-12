@@ -1,0 +1,13 @@
+# SSSD end-to-end test stack
+# Usage: docker compose -f docker/docker-compose.mock-pocketid.yml -f docker/docker-compose.sssd-test.yml up -d
+# Then:  docker compose -f docker/docker-compose.mock-pocketid.yml -f docker/docker-compose.sssd-test.yml exec sssd-test /test-sssd.sh
+
+services:
+  sssd-test:
+    build:
+      context: sssd-test
+    depends_on:
+      glauth:
+        condition: service_started
+    stdin_open: true
+    tty: true

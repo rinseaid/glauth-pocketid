@@ -1,0 +1,42 @@
+{
+  "data": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440001",
+      "username": "jordan",
+      "email": "jordan@example.com",
+      "firstName": "Jordan",
+      "lastName": "Smith",
+      "disabled": false,
+      "customClaims": [
+        {"key": "sshPublicKey1", "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAA jordan@laptop"},
+        {"key": "sshPublicKey2", "value": "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA jordan@desktop"},
+        {"key": "loginShell", "value": "/bin/zsh"}
+      ]
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440002",
+      "username": "alice",
+      "email": "alice@example.com",
+      "firstName": "Alice",
+      "lastName": "Jones",
+      "disabled": false,
+      "customClaims": [
+        {"key": "sshPublicKey1", "value": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAAB alice@laptop"}
+      ]
+    },
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440003",
+      "username": "bob",
+      "email": "bob@example.com",
+      "firstName": "Bob",
+      "lastName": "Brown",
+      "disabled": true,
+      "customClaims": []
+    }
+  ],
+  "pagination": {
+    "totalPages": 1,
+    "totalItems": 3,
+    "currentPage": 1
+  }
+}

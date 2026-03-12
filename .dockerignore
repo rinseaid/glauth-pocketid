@@ -1,0 +1,37 @@
+# Prevent secrets and unnecessary files from leaking into Docker build context
+.git
+.github
+.gitignore
+.dockerignore
+.claude
+.env*
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+bin/
+vendor/
+.glauth-source/
+*.test
+coverage.out
+
+# Documentation (not needed in image)
+CLAUDE.md
+README.md
+docs/
+
+# Test data
+testdata/
+*_test.go
+handler_test.go
+client_test.go
+
+# Compose files with potential secrets
+docker/docker-compose.pocketid.yml
+docker/seed-pocketid.sh
+docker/sssd-test/
+docker/mock-pocketid/

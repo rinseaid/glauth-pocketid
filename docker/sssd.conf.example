@@ -1,0 +1,27 @@
+[sssd]
+services = nss, pam, sudo, ssh
+domains = example.com
+
+[domain/example.com]
+id_provider     = ldap
+auth_provider   = none
+sudo_provider   = ldap
+
+ldap_uri        = ldap://glauth:3893
+ldap_search_base = dc=example,dc=com
+ldap_default_bind_dn = cn=serviceuser,ou=svcaccts,dc=example,dc=com
+ldap_default_authtok = REPLACE_WITH_SERVICE_ACCOUNT_PASSWORD
+
+ldap_user_object_class   = posixAccount
+ldap_group_object_class  = posixGroup
+ldap_user_name           = cn
+ldap_user_uid_number     = uidNumber
+ldap_user_gid_number     = gidNumber
+ldap_user_home_directory = homeDirectory
+ldap_user_shell          = loginShell
+ldap_user_ssh_public_key = sshPublicKey
+
+ldap_sudo_search_base = ou=sudoers,dc=example,dc=com
+
+[sudo]
+sudo_timed = false

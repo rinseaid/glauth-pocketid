@@ -1,0 +1,74 @@
+FROM debian:bookworm-slim
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    ldap-utils \
+    sssd \
+    sssd-ldap \
+    sssd-tools \
+    libnss-sss \
+    libpam-sss \
+    libsss-sudo \
+    openssh-server \
+    openssh-client \
+    sudo \
+    procps \
+    curl \
+    zsh \
+    jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# SSSD config
+COPY sssd.conf /etc/sssd/sssd.conf
+RUN chmod 600 /etc/sssd/sssd.conf
+
+# Directories
+RUN mkdir -p /var/run/sssd /run/sshd
+
+# NSS: use sss for passwd, group, shadow, sudoers
+RUN sed -i 's/^passwd:.*/passwd:         files sss/' /etc/nsswitch.conf && \
+    sed -i 's/^group:.*/group:          files sss/' /etc/nsswitch.conf && \
+    sed -i 's/^shadow:.*/shadow:         files sss/' /etc/nsswitch.conf && \
+    echo "sudoers:        files sss" >> /etc/nsswitch.conf
+
+# SSH: use SSSD for authorized keys
+RUN echo "" >> /etc/ssh/sshd_config && \
+    echo "AuthorizedKeysCommand /usr/bin/sss_ssh_authorizedkeys %u" >> /etc/ssh/sshd_config && \
+    echo "AuthorizedKeysCommandUser root" >> /etc/ssh/sshd_config && \
+    echo "PasswordAuthentication no" >> /etc/ssh/sshd_config && \
+    echo "PubkeyAuthentication yes" >> /etc/ssh/sshd_config
+RUN ssh-keygen -A
+
+# PAM: auto-create home directories
+RUN echo "session optional pam_mkhomedir.so skel=/etc/skel umask=0077" >> /etc/pam.d/common-session
+
+# Download pam-pocketid binary (arch-aware)
+ARG TARGETARCH
+RUN curl -fsSL -o /usr/local/bin/pam-pocketid \
+    "https://github.com/rinseaid/pam-pocketid/releases/download/v0.1.0/pam-pocketid-linux-${TARGETARCH}" && \
+    chmod +x /usr/local/bin/pam-pocketid
+
+# Configure PAM for sudo via pam-pocketid
+COPY sudo-pam /etc/pam.d/sudo
+
+# pam-pocketid client config
+# Uses host.docker.internal since pam-pocketid runs with network_mode: host
+RUN mkdir -p /etc/environment.d && \
+    echo 'PAM_POCKETID_SERVER_URL=http://host.docker.internal:8090' > /etc/environment.d/pam-pocketid.conf && \
+    echo 'PAM_POCKETID_SHARED_SECRET=test-pam-shared-secret' >> /etc/environment.d/pam-pocketid.conf
+
+# Also set in /etc/environment for pam_exec (pam_exec doesn't read environment.d)
+RUN echo 'PAM_POCKETID_SERVER_URL=http://host.docker.internal:8090' >> /etc/environment && \
+    echo 'PAM_POCKETID_SHARED_SECRET=test-pam-shared-secret' >> /etc/environment
+
+# pam-pocketid wrapper (sources env vars for pam_exec)
+COPY pam-pocketid-wrapper.sh /usr/local/bin/pam-pocketid-wrapper
+RUN chmod +x /usr/local/bin/pam-pocketid-wrapper
+
+# Test scripts
+COPY test.sh /test.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /test.sh /entrypoint.sh
+
+EXPOSE 22
+CMD ["/entrypoint.sh"]

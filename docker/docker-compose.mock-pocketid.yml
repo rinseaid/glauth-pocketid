@@ -1,0 +1,42 @@
+# Mock Pocket ID integration test stack.
+# Usage: docker compose -f docker/docker-compose.mock-pocketid.yml up -d --build
+# Test:  bash docker/test-features.sh localhost:3893 \
+#          "cn=serviceuser,ou=svcaccts,dc=example,dc=com" "mysecret" \
+#          "dc=example,dc=com" "http://localhost:8080"
+
+services:
+  mock-pocketid:
+    build:
+      context: mock-pocketid
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: "wget -q -O- http://localhost:8081/healthz || exit 1"
+      interval: 3s
+      timeout: 2s
+      retries: 10
+
+  glauth:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    ports:
+      - "3893:3893"
+      - "8080:8080"
+    environment:
+      POCKETID_BASE_URL: "http://mock-pocketid:8081"
+      POCKETID_API_KEY: "test-api-key"
+      POCKETID_REFRESH_SEC: "30"
+      POCKETID_PERSIST_PATH: "/var/lib/glauth/uidmap.json"
+      POCKETID_WEBHOOK_PORT: "8080"
+      POCKETID_WEBHOOK_SECRET: "test-webhook-secret"
+      POCKETID_SUDO_NO_AUTHENTICATE: "true"
+    volumes:
+      - ./glauth.cfg.example:/etc/glauth/glauth.cfg:ro
+      - glauth-data:/var/lib/glauth
+    depends_on:
+      mock-pocketid:
+        condition: service_healthy
+
+volumes:
+  glauth-data:

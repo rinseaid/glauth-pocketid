@@ -1,0 +1,5 @@
+# /etc/pam.d/sudo — pam-pocketid for browser-based sudo auth
+auth    required    pam_exec.so    stdout /usr/local/bin/pam-pocketid-wrapper
+account required    pam_unix.so
+session required    pam_limits.so
+session optional    pam_mkhomedir.so skel=/etc/skel umask=0077
