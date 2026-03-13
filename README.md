@@ -2,6 +2,8 @@
 
 A [GLAuth](https://github.com/glauth/glauth) plugin backend that bridges [Pocket ID](https://github.com/pocket-id/pocket-id) to LDAP, enabling sssd-based Linux host authentication with SSH key delivery, sudo rule synthesis, and more.
 
+> **Note**: The majority of this project's code was generated using AI-powered coding tools, with human direction, design decisions, and review throughout. All features have been extensively tested by hand against real infrastructure.
+
 ## Features
 
 - **SSH key delivery** — Public keys from Pocket ID custom claims via `sshPublicKey` LDAP attribute (up to 99 keys per user)
@@ -419,6 +421,35 @@ EOF
 ```
 
 sssd configuration remains the same as described in [Configuring Linux hosts](#configuring-linux-hosts) above — sssd handles user/group resolution and sudo rule delivery via LDAP, while PAM handles the authentication step via pam-pocketid.
+
+## TrueNAS SCALE
+
+glauth-pocketid is compatible with TrueNAS SCALE 25.10's built-in LDAP integration. TrueNAS uses SSSD internally, and this plugin emits both `cn` and `uid` attributes on posixAccount entries to match SSSD's default `ldap_user_name = uid` filter.
+
+### TrueNAS LDAP configuration
+
+In TrueNAS SCALE UI under **Credentials > Directory Services > LDAP**:
+
+| Setting | Value |
+|---|---|
+| Hostname | Your glauth host (e.g., `glauth.local`) |
+| Base DN | `dc=example,dc=com` (must match `GLAUTH_BASEDN`) |
+| Bind DN | `cn=serviceuser,ou=svcaccts,dc=example,dc=com` |
+| Bind Password | Your service account password |
+| SSL | `OFF` (or `START_TLS` if configured) |
+| Enable | checked |
+
+Under **Advanced Options**:
+
+| Setting | Value |
+|---|---|
+| Schema | `RFC2307` |
+
+### Known issues
+
+- **TrueNAS 25.10.0.1** has a known bug that generates invalid sssd.conf with LDAP filter syntax in attribute values (e.g., `ldap_user_object_class = (objectClass=posixAccount)` instead of `posixAccount`). This is a TrueNAS bug — check for updates if you see `Timed out while waiting for domain to come online`.
+- TrueNAS generates its own sssd.conf and does not expose all SSSD settings in the UI. The plugin accounts for this by emitting both `cn` and `uid` attributes.
+- The "domain online" check requires at least one user AND one group to be enumerable within 60 seconds. Ensure Pocket ID has at least one active user and one group with members.
 
 ## Version compatibility
 
