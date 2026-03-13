@@ -44,30 +44,24 @@ services:
       - "3893:3893"
       - "8080:8080"
     environment:
+      GLAUTH_BASEDN: "dc=example,dc=com"
+      GLAUTH_SERVICE_PASSWORD: "your-service-password"
       POCKETID_BASE_URL: "https://id.example.com"
       POCKETID_API_KEY: "your-pocket-id-api-key"
-      POCKETID_REFRESH_SEC: "300"
-      POCKETID_PERSIST_PATH: "/var/lib/glauth/uidmap.json"
       POCKETID_WEBHOOK_PORT: "8080"
-      # POCKETID_WEBHOOK_SECRET: "optional-shared-secret"
-      # POCKETID_UID_BASE: "10000"
-      # POCKETID_GID_BASE: "10000"
-      # POCKETID_DEFAULT_SHELL: "/bin/bash"
-      # POCKETID_DEFAULT_HOME: "/home/{username}"
     volumes:
       - glauth-data:/var/lib/glauth
-      - ./glauth.cfg:/etc/glauth/glauth.cfg:ro
     restart: unless-stopped
 
 volumes:
   glauth-data:
 ```
 
-Copy [`glauth.cfg.example`](glauth.cfg.example) to `glauth.cfg` and edit the service account password and base DN. Then:
-
 ```bash
 docker compose up -d
 ```
+
+The container generates `glauth.cfg` from environment variables at startup. To use a custom config file instead, mount it at `/etc/glauth/glauth.cfg` and set `GLAUTH_SKIP_TEMPLATE=true`.
 
 ### Verify it works
 
@@ -98,6 +92,27 @@ The container includes a default [`glauth.cfg.example`](glauth.cfg.example). Mou
 ```
 
 ### Environment variables
+
+#### GLAuth config
+
+The container generates `glauth.cfg` from these variables at startup. Set `GLAUTH_SKIP_TEMPLATE=true` to use a mounted config file instead.
+
+| Variable | Default | Description |
+|---|---|---|
+| `GLAUTH_BASEDN` | `dc=example,dc=com` | LDAP base DN |
+| `GLAUTH_SERVICE_PASSWORD` | *(required\*)* | Service account password (plaintext, hashed at startup) |
+| `GLAUTH_SERVICE_PASSWORD_SHA256` | *(required\*)* | Service account password (pre-hashed SHA-256) |
+| `GLAUTH_SERVICE_USER` | `serviceuser` | Service account username |
+| `GLAUTH_SERVICE_GROUP` | `svcaccts` | Service account group name |
+| `GLAUTH_SERVICE_UIDNUMBER` | `9000` | Service account UID |
+| `GLAUTH_SERVICE_GIDNUMBER` | `9000` | Service account GID |
+| `GLAUTH_LDAP_PORT` | `3893` | LDAP listen port |
+| `GLAUTH_DEBUG` | `false` | Enable debug logging |
+| `GLAUTH_SKIP_TEMPLATE` | `false` | Skip config generation, use mounted file |
+
+\* Provide either `GLAUTH_SERVICE_PASSWORD` or `GLAUTH_SERVICE_PASSWORD_SHA256`.
+
+#### Plugin config
 
 | Variable | Default | Description |
 |---|---|---|
@@ -344,15 +359,14 @@ services:
       - "3893:3893"
       - "8080:8080"
     environment:
+      GLAUTH_BASEDN: "dc=example,dc=com"
+      GLAUTH_SERVICE_PASSWORD: "your-service-password"
       POCKETID_BASE_URL: "https://id.example.com"
       POCKETID_API_KEY: "your-pocket-id-api-key"
-      POCKETID_REFRESH_SEC: "300"
-      POCKETID_PERSIST_PATH: "/var/lib/glauth/uidmap.json"
       POCKETID_WEBHOOK_PORT: "8080"
       # Do NOT set POCKETID_SUDO_NO_AUTHENTICATE — let PAM handle auth
     volumes:
       - glauth-data:/var/lib/glauth
-      - ./glauth.cfg:/etc/glauth/glauth.cfg:ro
     restart: unless-stopped
 
   pam-pocketid:

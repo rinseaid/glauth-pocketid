@@ -61,6 +61,15 @@ var dangerousSudoOptionPrefixes = []string{
 	"env_keep+=VISUAL",          // editor override (used by visudo, crontab -e, etc.)
 	"env_keep+=SUDO_EDITOR",    // editor override for sudoedit
 	"env_keep+=TMPDIR",          // temp directory override (symlink attacks)
+	"env_keep+=IFS",             // internal field separator — classic shell privilege escalation
+	"env_keep+=LD_AUDIT",        // glibc audit library injection (similar to LD_PRELOAD)
+	"env_keep+=LD_PROFILE",      // glibc profiling — code execution via profiling library
+	"env_keep+=PROMPT_COMMAND",  // Bash executes this before every prompt display
+	"env_keep+=SHELLOPTS",       // Bash shell option injection
+	"env_keep+=BASHOPTS",        // additional Bash option injection
+	"env_keep+=CDPATH",          // causes unexpected directory changes in scripts
+	"env_keep+=GLOBIGNORE",      // alters glob behavior in shell scripts
+	"env_keep+=_JAVA_OPTIONS",   // alternative Java agent injection vector
 	"secure_path",               // overrides safe command PATH
 	"mailerpath",                // specifies arbitrary program for sudo to execute
 	"logfile",                   // allows writing to arbitrary file paths

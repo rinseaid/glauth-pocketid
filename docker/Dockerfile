@@ -22,17 +22,20 @@ RUN cd /build/plugin && \
     CGO_ENABLED=1 go build -buildmode=plugin -o /app/pocketid.so .
 
 FROM debian:bookworm-slim
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates gettext-base && rm -rf /var/lib/apt/lists/*
 
 RUN groupadd -r glauth && useradd -r -g glauth -d /var/lib/glauth -s /sbin/nologin glauth
 
 COPY --from=builder /app/glauth /app/glauth
 COPY --from=builder /app/pocketid.so /app/pocketid.so
-COPY glauth.cfg.example /etc/glauth/glauth.cfg
+COPY docker/glauth.cfg.tmpl /etc/glauth/glauth.cfg.tmpl
+COPY docker/glauth.cfg.example /etc/glauth/glauth.cfg
+COPY docker/entrypoint.sh /app/entrypoint.sh
 
-RUN mkdir -p /var/lib/glauth && chown glauth:glauth /var/lib/glauth
+RUN mkdir -p /var/lib/glauth && chown glauth:glauth /var/lib/glauth && \
+    chown -R glauth:glauth /etc/glauth
 
 USER glauth
 EXPOSE 3893
 
-ENTRYPOINT ["/app/glauth", "-c", "/etc/glauth/glauth.cfg"]
+ENTRYPOINT ["/app/entrypoint.sh"]

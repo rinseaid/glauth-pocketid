@@ -1,0 +1,39 @@
+debug = ${GLAUTH_DEBUG}
+
+[ldap]
+  enabled = true
+  listen  = "0.0.0.0:${GLAUTH_LDAP_PORT}"
+
+[ldaps]
+  enabled = false
+
+[backend]
+  datastore     = "plugin"
+  plugin        = "/app/pocketid.so"
+  pluginhandler = "NewPocketIDHandler"
+  baseDN        = "${GLAUTH_BASEDN}"
+  nameformat    = "cn"
+  groupformat   = "ou"
+  sshkeyattr    = "sshPublicKey"
+  anonymousdse  = true
+
+[behaviors]
+  IgnoreCapabilities = false
+
+# Service account for sssd to bind with
+[[users]]
+  name         = "${GLAUTH_SERVICE_USER}"
+  uidnumber    = ${GLAUTH_SERVICE_UIDNUMBER}
+  primarygroup = ${GLAUTH_SERVICE_GIDNUMBER}
+  passsha256   = "${GLAUTH_SERVICE_PASSWORD_SHA256}"
+
+[[users.capabilities]]
+  action = "search"
+  object = "*"
+
+[[groups]]
+  name      = "${GLAUTH_SERVICE_GROUP}"
+  gidnumber = ${GLAUTH_SERVICE_GIDNUMBER}
+
+[api]
+  enabled = false

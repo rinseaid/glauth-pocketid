@@ -5,6 +5,13 @@ services:
       - "3893:3893"
       - "8080:8080"
     environment:
+      # GLAuth config (generates glauth.cfg from template)
+      GLAUTH_BASEDN: "dc=example,dc=com"
+      GLAUTH_SERVICE_PASSWORD: "your-service-password"
+      # GLAUTH_SERVICE_USER: "serviceuser"
+      # GLAUTH_DEBUG: "false"
+      # GLAUTH_LDAP_PORT: "3893"
+      # Plugin config
       POCKETID_BASE_URL: "https://id.example.com"
       POCKETID_API_KEY: "your-pocket-id-api-key"
       POCKETID_REFRESH_SEC: "300"
@@ -17,7 +24,6 @@ services:
       # POCKETID_DEFAULT_HOME: "/home/{username}"
     volumes:
       - glauth-data:/var/lib/glauth
-      - ./glauth.cfg.example:/etc/glauth/glauth.cfg:ro
     restart: unless-stopped
 
 volumes:

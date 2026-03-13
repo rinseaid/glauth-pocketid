@@ -750,9 +750,19 @@ func (s *Store) FindPosixAccounts(backend config.Backend, hierarchy string) ([]*
 	for _, u := range s.users {
 		attrs := []*ldap.EntryAttribute{}
 
-		// Name attributes
+		// Name attributes — emit both the configured nameformat (typically "cn")
+		// and "uid" so that SSSD's default ldap_user_name=uid filter matches.
+		// TrueNAS SCALE and other appliances generate their own sssd.conf with
+		// uid as the user name attribute and cannot be easily overridden.
+		emittedUID := false
 		for _, nameAttr := range backend.NameFormatAsArray {
 			attrs = append(attrs, &ldap.EntryAttribute{Name: nameAttr, Values: []string{u.Name}})
+			if nameAttr == "uid" {
+				emittedUID = true
+			}
+		}
+		if !emittedUID {
+			attrs = append(attrs, &ldap.EntryAttribute{Name: "uid", Values: []string{u.Name}})
 		}
 
 		if len(u.GivenName) > 0 {

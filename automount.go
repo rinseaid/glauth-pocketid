@@ -48,12 +48,27 @@ func hasUnsafeMountOption(info string) bool {
 			for _, opt := range strings.Split(optStr, ",") {
 				opt = strings.TrimSpace(opt)
 				opt = strings.TrimLeft(opt, "-")
+				// Check both exact match and key portion before '='
+				// to catch variants like suid=1 or dev=true
 				if unsafeMountOptions[opt] {
 					return true
 				}
+				if eqIdx := strings.Index(opt, "="); eqIdx >= 0 {
+					if unsafeMountOptions[opt[:eqIdx]] {
+						return true
+					}
+				}
 			}
-		} else if unsafeMountOptions[strings.TrimLeft(part, "-")] {
-			return true
+		} else {
+			key := strings.TrimLeft(part, "-")
+			if unsafeMountOptions[key] {
+				return true
+			}
+			if eqIdx := strings.Index(key, "="); eqIdx >= 0 {
+				if unsafeMountOptions[key[:eqIdx]] {
+					return true
+				}
+			}
 		}
 	}
 	return false

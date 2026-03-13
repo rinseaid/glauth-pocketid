@@ -297,9 +297,19 @@ func TestFindPosixAccounts(t *testing.T) {
 		t.Errorf("expected 2 posix accounts, got %d", len(entries))
 	}
 
-	// Check that SSH keys are present in entries
+	// Check that SSH keys are present in entries and uid attribute is emitted
 	for _, entry := range entries {
-		if getAttr(entry, "cn") == "jordan" {
+		// Every posixAccount should have a uid attribute (for SSSD compatibility)
+		uidVal := getAttr(entry, "uid")
+		cnVal := getAttr(entry, "cn")
+		if uidVal == "" {
+			t.Errorf("entry %s missing uid attribute (needed for SSSD ldap_user_name=uid)", entry.DN)
+		}
+		if uidVal != cnVal {
+			t.Errorf("uid (%s) should match cn (%s)", uidVal, cnVal)
+		}
+
+		if cnVal == "jordan" {
 			sshKeys := getAttrValues(entry, "sshPublicKey")
 			if len(sshKeys) != 2 {
 				t.Errorf("expected 2 SSH keys for jordan entry, got %d", len(sshKeys))
@@ -1636,6 +1646,10 @@ func TestHasUnsafeMountOption(t *testing.T) {
 		{"-fstype=nfs,DEV server:/path", true, "case insensitive dev"},
 		{"-fstype=nfs,EXEC server:/path", true, "case insensitive exec"},
 		{"-fstype=nfs,nonosuid server:/path", false, "nonosuid is not suid"},
+		{"-fstype=nfs,suid=1 server:/path", true, "suid=1 bypass attempt"},
+		{"-fstype=nfs,dev=true server:/path", true, "dev=true bypass attempt"},
+		{"-fstype=nfs,exec=yes server:/path", true, "exec=yes bypass attempt"},
+		{"suid=1", true, "bare suid=1 bypass attempt"},
 	}
 
 	for _, tt := range tests {
@@ -1743,6 +1757,17 @@ func TestSudoOptionValidation(t *testing.T) {
 		{"!authenticate", false, "dangerous: disables PAM auth"},
 		{"! authenticate", false, "whitespace bypass: !authenticate with space"},
 		{"authenticate", false, "dangerous: explicit authenticate toggle"},
+		// Round 8: newly added denylist entries
+		{"env_keep+=IFS", false, "dangerous: IFS shell injection"},
+		{"env_keep+=LD_AUDIT", false, "dangerous: glibc audit library injection"},
+		{"env_keep+=LD_PROFILE", false, "dangerous: glibc profiling injection"},
+		{"env_keep+=PROMPT_COMMAND", false, "dangerous: Bash prompt command injection"},
+		{"env_keep+=SHELLOPTS", false, "dangerous: Bash shell option injection"},
+		{"env_keep+=BASHOPTS", false, "dangerous: Bash option injection"},
+		{"env_keep+=CDPATH", false, "dangerous: unexpected directory changes"},
+		{"env_keep+=GLOBIGNORE", false, "dangerous: glob behavior alteration"},
+		{"env_keep+=_JAVA_OPTIONS", false, "dangerous: Java agent injection"},
+		{"env_keep += IFS", false, "whitespace bypass: IFS with spaces"},
 	}
 
 	for _, tt := range tests {
