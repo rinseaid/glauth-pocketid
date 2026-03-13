@@ -114,7 +114,7 @@ func NewPocketIDHandler(opts ...handler.Option) handler.Handler {
 	// Start webhook/metrics server if configured
 	if pluginCfg.WebhookPort > 0 {
 		h.webhook = NewWebhookServer(pluginCfg.WebhookPort, pluginCfg.WebhookSecret, store, provider, h.log, &h.refreshMu, pluginCfg.WebhookListen)
-		h.webhook.Mux().HandleFunc("/metrics", h.webhook.AuthenticatedHandler(globalMetrics.Handler()))
+		h.webhook.Mux().HandleFunc("/metrics", globalMetrics.Handler())
 		h.webhook.Start()
 	}
 
