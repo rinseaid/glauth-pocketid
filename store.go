@@ -866,8 +866,15 @@ func (s *Store) FindPosixGroups(backend config.Backend, hierarchy string) ([]*ld
 	// posixGroup entry and tools like `id` show "cannot find name for group ID".
 	for _, u := range s.users {
 		attrs := []*ldap.EntryAttribute{}
+		emittedCN := false
 		for _, groupAttr := range backend.GroupFormatAsArray {
 			attrs = append(attrs, &ldap.EntryAttribute{Name: groupAttr, Values: []string{u.Name}})
+			if groupAttr == "cn" {
+				emittedCN = true
+			}
+		}
+		if !emittedCN {
+			attrs = append(attrs, &ldap.EntryAttribute{Name: "cn", Values: []string{u.Name}})
 		}
 		attrs = append(attrs, &ldap.EntryAttribute{Name: "description", Values: []string{fmt.Sprintf("User private group for %s", u.Name)}})
 		attrs = append(attrs, &ldap.EntryAttribute{Name: "gidNumber", Values: []string{fmt.Sprintf("%d", u.UIDNumber)}})
@@ -889,8 +896,15 @@ func (s *Store) FindPosixGroups(backend config.Backend, hierarchy string) ([]*ld
 	for _, g := range s.groups {
 		attrs := []*ldap.EntryAttribute{}
 
+		emittedCN := false
 		for _, groupAttr := range backend.GroupFormatAsArray {
 			attrs = append(attrs, &ldap.EntryAttribute{Name: groupAttr, Values: []string{g.Name}})
+			if groupAttr == "cn" {
+				emittedCN = true
+			}
+		}
+		if !emittedCN {
+			attrs = append(attrs, &ldap.EntryAttribute{Name: "cn", Values: []string{g.Name}})
 		}
 
 		attrs = append(attrs, &ldap.EntryAttribute{Name: "description", Values: []string{g.Name}})
