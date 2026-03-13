@@ -74,30 +74,11 @@ ldapsearch -x -H ldap://localhost:3893 \
   -b "dc=example,dc=com" "(objectClass=posixAccount)"
 ```
 
-## GLAuth configuration
+## Configuration
 
-The container includes a default [`glauth.cfg.example`](glauth.cfg.example). Mount your own config at `/etc/glauth/glauth.cfg`. Key settings:
+The container generates `glauth.cfg` automatically from environment variables at startup — no config file needed.
 
-```toml
-[backend]
-  datastore     = "plugin"
-  plugin        = "/app/pocketid.so"
-  pluginhandler = "NewPocketIDHandler"
-  baseDN        = "dc=example,dc=com"
-  nameformat    = "cn"
-  groupformat   = "ou"
-  sshkeyattr    = "sshPublicKey"
-  anonymousdse  = true
-
-[behaviors]
-  IgnoreCapabilities = false
-```
-
-### Environment variables
-
-#### GLAuth config
-
-The container generates `glauth.cfg` from these variables at startup. Set `GLAUTH_SKIP_TEMPLATE=true` to use a mounted config file instead.
+### GLAuth server
 
 | Variable | Default | Description |
 |---|---|---|
@@ -110,11 +91,10 @@ The container generates `glauth.cfg` from these variables at startup. Set `GLAUT
 | `GLAUTH_SERVICE_GIDNUMBER` | `9000` | Service account GID |
 | `GLAUTH_LDAP_PORT` | `3893` | LDAP listen port |
 | `GLAUTH_DEBUG` | `false` | Enable debug logging |
-| `GLAUTH_SKIP_TEMPLATE` | `false` | Skip config generation, use mounted file |
 
 \* Provide either `GLAUTH_SERVICE_PASSWORD` or `GLAUTH_SERVICE_PASSWORD_SHA256`.
 
-#### Plugin config
+### Plugin
 
 | Variable | Default | Description |
 |---|---|---|
@@ -129,6 +109,10 @@ The container generates `glauth.cfg` from these variables at startup. Set `GLAUT
 | `POCKETID_WEBHOOK_PORT` | `0` (disabled) | Port for webhook/metrics HTTP server |
 | `POCKETID_WEBHOOK_SECRET` | *(empty)* | Shared secret for webhook authentication |
 | `POCKETID_SUDO_NO_AUTHENTICATE` | `false` | Sudo auth policy: `false` / `true` / `claims` (see [Sudo authentication](#sudo-authentication)) |
+
+### Custom config file
+
+To use a mounted config file instead of environment variables, set `GLAUTH_SKIP_TEMPLATE=true` and mount your config at `/etc/glauth/glauth.cfg`. See [`glauth.cfg.example`](glauth.cfg.example) for the required settings.
 
 ## Configuring Linux hosts
 
